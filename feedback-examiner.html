@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITCA 2026 — Examiner Feedback</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f7f5;--white:#ffffff;--ink:#1a1a1a;--muted:#6b7280;
+  --border:#e5e4e0;--accent:#1a1a1a;--chip-bg:#f3f2ef;--chip-sel:#1a1a1a;
+  --chip-sel-text:#ffffff;--star-active:#f59e0b;--star:#d1d5db;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+
+.header{background:#1a1a1a;color:white;padding:2.5rem 2rem 2rem;text-align:center;border-bottom:3px solid #f59e0b;}
+.header h1{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:300;letter-spacing:-0.02em;margin-bottom:0.4rem;}
+.header p{font-size:0.82rem;opacity:0.6;letter-spacing:0.06em;text-transform:uppercase;}
+.header .role-badge{display:inline-block;margin-top:0.75rem;padding:0.25rem 0.75rem;background:#f59e0b;color:#1a1a1a;border-radius:99px;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;}
+
+.form-wrap{max-width:680px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+
+.name-row{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;}
+.name-row label{font-size:0.8rem;color:var(--muted);white-space:nowrap;}
+.name-row input{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:0.95rem;background:transparent;color:var(--ink);}
+
+.section{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1.5rem;margin-bottom:1.25rem;}
+.section-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:400;margin-bottom:0.3rem;}
+.section-sub{font-size:0.78rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.5;}
+
+.stars{display:flex;gap:0.35rem;margin-bottom:1.25rem;}
+.star{font-size:1.6rem;cursor:pointer;color:var(--star);transition:color 0.12s;line-height:1;}
+.star.active{color:var(--star-active);}
+.stars-wrap{display:flex;flex-direction:column;align-items:flex-start;}
+.stars-row{display:flex;align-items:center;gap:0.5rem;}
+.stars-row .rating-label{font-size:0.72rem;color:var(--muted);min-width:80px;}
+
+.chips{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.25rem;}
+.chip{padding:0.35rem 0.75rem;border-radius:99px;font-size:0.75rem;cursor:pointer;border:1px solid var(--border);background:var(--chip-bg);color:var(--ink);transition:all 0.12s;user-select:none;}
+.chip:hover{border-color:#9ca3af;}
+.chip.selected{background:var(--chip-sel);color:var(--chip-sel-text);border-color:var(--chip-sel);}
+
+.free-text{width:100%;border:1px solid var(--border);border-radius:7px;padding:0.75rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:var(--ink);background:var(--bg);resize:vertical;min-height:70px;outline:none;transition:border-color 0.15s;}
+.free-text:focus{border-color:var(--ink);}
+.text-label{font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem;display:block;}
+
+.overall-wrap{background:#1a1a1a;color:white;border-radius:10px;padding:1.5rem;margin-bottom:1.5rem;text-align:center;border:3px solid #f59e0b;}
+.overall-wrap .section-title{color:white;}
+.overall-wrap .section-sub{color:rgba(255,255,255,0.6);}
+.overall-stars .star{font-size:2rem;color:rgba(255,255,255,0.3);}
+.overall-stars .star.active{color:#fbbf24;}
+.overall-stars{justify-content:center;}
+
+.submit-btn{width:100%;padding:1rem;background:#1a1a1a;color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;cursor:pointer;letter-spacing:0.02em;transition:opacity 0.15s;}
+.submit-btn:hover{opacity:0.85;}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.status{text-align:center;font-size:0.82rem;color:var(--muted);margin-top:0.75rem;min-height:20px;}
+.status.success{color:#059669;}
+.status.error{color:#dc2626;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ITCA 2026</h1>
+  <p>Examiner Feedback Form</p>
+  <div class="role-badge">Examiner</div>
+</div>
+
+<div class="form-wrap">
+
+  <div class="name-row">
+    <label>Your name (optional)</label>
+    <input type="text" id="resp-name" placeholder="Leave blank to stay anonymous">
+  </div>
+
+  <!-- 1. Organisation & Logistics -->
+  <div class="section">
+    <div class="section-title">Organisation &amp; Logistics</div>
+    <div class="section-sub">How well organised was the day from your perspective as an examiner?</div>
+    <div class="stars-wrap">
+      <div class="stars-row">
+        <span class="rating-label">Your rating</span>
+        <div class="stars" id="stars-logistics">
+          <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span>
+        </div>
+      </div>
+    </div>
+    <div class="chips" id="chips-logistics">
+      <span class="chip">Well organised</span>
+      <span class="chip">Clear briefing</span>
+      <span class="chip">Ran to time</span>
+      <span class="chip">Good support on the day</span>
+      <span class="chip">Felt valued as an examiner</span>
+      <span class="chip">Chaotic</span>
+      <span class="chip">Ran over time</span>
+      <span class="chip">Not enough support</span>
+      <span class="chip">Unclear what was expected of me</span>
+      <span class="chip">Would have liked a pre-exam briefing</span>
+      <span class="chip">Station setup was good</span>
+      <span class="chip">Too many candidates per session</span>
+    </div>
+    <span class="text-label">Any comments?</span>
+    <textarea class="free-text" id="text-logistics" placeholder="Anything about how the day was organised…"></textarea>
+  </div>
+
+  <!-- 2. Communication -->
+  <div class="section">
+    <div class="section-title">Communication Beforehand</div>
+    <div class="section-sub">Did you receive enough information ahead of the exam?</div>
+    <div class="stars-wrap">
+      <div class="stars-row">
+        <span class="rating-label">Your rating</span>
+        <div class="stars" id="stars-comms">
+          <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span>
+        </div>
+      </div>
+    </div>
+    <div class="chips" id="chips-comms">
+      <span class="chip">Sufficient notice</span>
+      <span class="chip">Clear instructions</span>
+      <span class="chip">Knew what was expected</span>
+      <span class="chip">Marking criteria was clear</span>
+      <span class="chip">Good calibration guidance</span>
+      <span class="chip">Last minute</span>
+      <span class="chip">Would have liked more info</span>
+      <span class="chip">Scoring system needed more explanation</span>
+      <span class="chip">Would have liked example cases</span>
+      <span class="chip">Communication was excellent</span>
+    </div>
+    <span class="text-label">Any comments?</span>
+    <textarea class="free-text" id="text-comms" placeholder="Anything about how you were informed beforehand…"></textarea>
+  </div>
+
+  <!-- 3. Examination Process -->
+  <div class="section">
+    <div class="section-title">The Examination Process</div>
+    <div class="section-sub">How did the format work for you as an examiner?</div>
+    <div class="stars-wrap">
+      <div class="stars-row">
+        <span class="rating-label">Your rating</span>
+        <div class="stars" id="stars-process">
+          <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span>
+        </div>
+      </div>
+    </div>
+    <div class="chips" id="chips-process">
+      <span class="chip">Time felt right</span>
+      <span class="chip">Good structure</span>
+      <span class="chip">Format worked well</span>
+      <span class="chip">Candidates were well prepared</span>
+      <span class="chip">Scoring felt fair</span>
+      <span class="chip">Easy to discriminate between candidates</span>
+      <span class="chip">Too rushed</span>
+      <span class="chip">Not enough time to assess properly</span>
+      <span class="chip">Hard to score objectively</span>
+      <span class="chip">Would change the question format</span>
+      <span class="chip">Candidates seemed underprepared</span>
+      <span class="chip">Felt well calibrated with co-examiner</span>
+      <span class="chip">Scoring domains felt appropriate</span>
+      <span class="chip">Would change the number of questions</span>
+    </div>
+    <span class="text-label">Any comments?</span>
+    <textarea class="free-text" id="text-process" placeholder="How did the exam format feel from an examiner perspective?…"></textarea>
+  </div>
+
+  <!-- 4. Feedback Given -->
+  <div class="section">
+    <div class="section-title">Giving Feedback to Candidates</div>
+    <div class="section-sub">How did you find giving verbal feedback at the end of each station?</div>
+    <div class="stars-wrap">
+      <div class="stars-row">
+        <span class="rating-label">Your rating</span>
+        <div class="stars" id="stars-feedback">
+          <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span>
+        </div>
+      </div>
+    </div>
+    <div class="chips" id="chips-feedback">
+      <span class="chip">Enough time for feedback</span>
+      <span class="chip">Felt natural</span>
+      <span class="chip">Candidates received it well</span>
+      <span class="chip">Good structure</span>
+      <span class="chip">Not enough time</span>
+      <span class="chip">Hard to give balanced feedback quickly</span>
+      <span class="chip">Would have liked guidance on feedback</span>
+      <span class="chip">Feedback felt rushed</span>
+      <span class="chip">Would prefer written feedback option</span>
+      <span class="chip">Candidates seemed to value it</span>
+    </div>
+    <span class="text-label">Any comments?</span>
+    <textarea class="free-text" id="text-feedback" placeholder="Anything about the feedback process…"></textarea>
+  </div>
+
+  <!-- 5. Technical -->
+  <div class="section">
+    <div class="section-title">Technical &amp; App Experience</div>
+    <div class="section-sub">The QR code scanning, examiner app, and score submission process.</div>
+    <div class="stars-wrap">
+      <div class="stars-row">
+        <span class="rating-label">Your rating</span>
+        <div class="stars" id="stars-technical">
+          <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span>
+        </div>
+      </div>
+    </div>
+    <div class="chips" id="chips-technical">
+      <span class="chip">App worked well</span>
+      <span class="chip">QR codes worked first time</span>
+      <span class="chip">Intuitive to use</span>
+      <span class="chip">Scores submitted easily</span>
+      <span class="chip">No issues</span>
+      <span class="chip">Process felt modern and efficient</span>
+      <span class="chip">QR code issues</span>
+      <span class="chip">App was confusing</span>
+      <span class="chip">Needed help from staff</span>
+      <span class="chip">Preferred paper scoring</span>
+      <span class="chip">Would benefit from a practice run</span>
+      <span class="chip">Took too long to submit scores</span>
+      <span class="chip">Unsure if scores were saved</span>
+    </div>
+    <span class="text-label">Any comments?</span>
+    <textarea class="free-text" id="text-technical" placeholder="Any issues with the app or QR scanning?…"></textarea>
+  </div>
+
+  <!-- Free text -->
+  <div class="section">
+    <div class="section-title">In your own words</div>
+    <div class="section-sub">These are the most useful responses — please be candid.</div>
+    <span class="text-label">What worked well?</span>
+    <textarea class="free-text" id="text-well" placeholder="What would you keep exactly the same next time?…" style="margin-bottom:1rem"></textarea>
+    <span class="text-label">What could be improved?</span>
+    <textarea class="free-text" id="text-improve" placeholder="What one thing would make this better next year?…" style="margin-bottom:1rem"></textarea>
+    <span class="text-label">Any other comments?</span>
+    <textarea class="free-text" id="text-other" placeholder="Anything else…"></textarea>
+  </div>
+
+  <!-- Overall -->
+  <div class="overall-wrap">
+    <div class="section-title" style="margin-bottom:0.3rem">Overall, how would you rate ITCA 2026?</div>
+    <div class="section-sub" style="margin-bottom:1rem">Your overall impression as an examiner</div>
+    <div class="stars overall-stars" id="stars-overall">
+      <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submit-btn" onclick="submitForm()">Submit Feedback</button>
+  <div class="status" id="status-msg"></div>
+
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwI45kvWjycug7yAkuiEwFa3X4wO8V_cW7UBbHZ-7xJkot5xdfAejhnrm3KYUBbPwjI/exec_YOUR_FEEDBACK_APPS_SCRIPT_URL_HERE';
+
+const ratings = {};
+document.querySelectorAll('.stars').forEach(container => {
+  const id = container.id.replace('stars-', '');
+  ratings[id] = 0;
+  const stars = container.querySelectorAll('.star');
+  stars.forEach(star => {
+    star.addEventListener('mouseenter', () => {
+      stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= parseInt(star.dataset.v)));
+    });
+    star.addEventListener('mouseleave', () => {
+      stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= ratings[id]));
+    });
+    star.addEventListener('click', () => {
+      ratings[id] = parseInt(star.dataset.v);
+      stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= ratings[id]));
+    });
+  });
+  container.addEventListener('mouseleave', () => {
+    stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= ratings[id]));
+  });
+});
+
+document.querySelectorAll('.chips').forEach(container => {
+  container.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => chip.classList.toggle('selected'));
+  });
+});
+
+function getChips(id) {
+  return [...document.querySelectorAll(`#chips-${id} .chip.selected`)].map(c => c.textContent);
+}
+function getText(id) {
+  return document.getElementById(`text-${id}`)?.value.trim() || '';
+}
+
+async function submitForm() {
+  const btn = document.getElementById('submit-btn');
+  const status = document.getElementById('status-msg');
+  btn.disabled = true;
+  status.textContent = 'Submitting…';
+  status.className = 'status';
+
+  const payload = {
+    type: 'examiner',
+    name: document.getElementById('resp-name').value.trim(),
+    overall: ratings['overall'] || '',
+    sections: {
+      logistics: { rating: ratings['logistics'], phrases: getChips('logistics'), comments: getText('logistics') },
+      comms:     { rating: ratings['comms'],     phrases: getChips('comms'),     comments: getText('comms') },
+      process:   { rating: ratings['process'],   phrases: getChips('process'),   comments: getText('process') },
+      feedback:  { rating: ratings['feedback'],  phrases: getChips('feedback'),  comments: getText('feedback') },
+      technical: { rating: ratings['technical'], phrases: getChips('technical'), comments: getText('technical') },
+    },
+    wellText:    document.getElementById('text-well').value.trim(),
+    improveText: document.getElementById('text-improve').value.trim(),
+    otherText:   document.getElementById('text-other').value.trim(),
+  };
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    status.textContent = 'Thank you — your feedback has been submitted.';
+    status.className = 'status success';
+    btn.textContent = 'Submitted ✓';
+  } catch(err) {
+    status.textContent = 'Could not submit. Please check your connection and try again.';
+    status.className = 'status error';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
