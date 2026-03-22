@@ -71,6 +71,7 @@ body{font-family:'DM Sans',sans-serif;background:#0f0f0f;color:#f0f0f0;min-heigh
 .bell-row select{font-size:13px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;padding:6px 10px;color:#f0f0f0;font-family:'DM Sans',sans-serif;outline:none;}
 .bell-row select:focus{border-color:#555;}
 .btn-sm{padding:6px 14px;border-radius:5px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid #2a2a2a;background:transparent;color:#aaa;transition:all 0.15s;}
+.bell-count-sel{font-size:13px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;padding:4px 8px;color:#f0f0f0;font-family:'DM Sans',sans-serif;outline:none;}
 .btn-sm:hover{border-color:#555;color:#f0f0f0;}
 
 .complete-msg{text-align:center;font-size:1.2rem;color:#888;letter-spacing:0.08em;text-transform:uppercase;padding:1rem 0;}
@@ -125,6 +126,35 @@ body{font-family:'DM Sans',sans-serif;background:#0f0f0f;color:#f0f0f0;min-heigh
     <button class="btn-sm" onclick="ringBell(2)">Preview 2x</button>
     <button class="btn-sm" onclick="ringBell(3)">Preview 3x</button>
   </div>
+  <div class="bell-row" style="margin-top:0.75rem;">
+    <label>Gap between bells:</label>
+    <input type="range" id="bell-gap" min="0.4" max="2.5" step="0.1" value="1.5" style="flex:1;accent-color:#f0f0f0;" oninput="document.getElementById('bell-gap-val').textContent=parseFloat(this.value).toFixed(1)+'s'">
+    <span id="bell-gap-val" style="font-size:12px;color:#aaa;min-width:30px;">1.5s</span>
+  </div>
+  <div class="divider"></div>
+  <div class="settings-title">Bell counts per transition</div>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <label style="flex:1;font-size:13px;color:#aaa;">Start of Q1 (new rotation)</label>
+      <select id="bell-start" class="bell-count-sel"><option value="1">1×</option><option value="2">2×</option><option value="3" selected>3×</option></select>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <label style="flex:1;font-size:13px;color:#aaa;">Q1 → Q2</label>
+      <select id="bell-q1q2" class="bell-count-sel"><option value="1" selected>1×</option><option value="2">2×</option><option value="3">3×</option></select>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <label style="flex:1;font-size:13px;color:#aaa;">Q2 → Feedback</label>
+      <select id="bell-q2fb" class="bell-count-sel"><option value="1">1×</option><option value="2" selected>2×</option><option value="3">3×</option></select>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <label style="flex:1;font-size:13px;color:#aaa;">Feedback → Candidate moves</label>
+      <select id="bell-fbmv" class="bell-count-sel"><option value="1" selected>1×</option><option value="2">2×</option><option value="3">3×</option></select>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <label style="flex:1;font-size:13px;color:#aaa;">End of candidate moves</label>
+      <select id="bell-end" class="bell-count-sel"><option value="1" selected>1×</option><option value="2">2×</option><option value="3">3×</option></select>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -173,7 +203,7 @@ function renderPhaseSettings(){
 function renderPhaseTrack(){
   const el = document.getElementById('phase-track');
   el.innerHTML = '';
-  PHASES.filter(p => p.id !== 'move').forEach((_,i) => {
+  PHASES.filter(p => p.id).forEach((_,i) => {
     const seg = document.createElement('div');
     seg.className = 'phase-seg';
     const bar = document.createElement('div');
@@ -241,8 +271,10 @@ function startStop(){
   } else {
     running = true;
     document.getElementById('btn-start').textContent = 'Pause';
-    if(remainSecs === phaseSecs(0) && curPhase === 0 && curRot === 1) ringBell(1);
     iv = setInterval(tick, 1000);
+    if(remainSecs === phaseSecs(0) && curPhase === 0 && curRot === 1){
+      setTimeout(()=>ringBell(getBellCount('bell-start')), 100);
+    }
   }
 }
 
@@ -252,28 +284,35 @@ function tick(){
   if(remainSecs <= 0) advancePhase();
 }
 
+function getBellCount(id){ return parseInt(document.getElementById(id)?.value||1); }
+
 function advancePhase(){
-  ringBell(1);
+  const phaseId = PHASES[curPhase].id;
+  if(phaseId==='q1')      ringBell(getBellCount('bell-q1q2'));
+  else if(phaseId==='q2') ringBell(getBellCount('bell-q2fb'));
+  else if(phaseId==='fb') ringBell(getBellCount('bell-fbmv'));
+  else                    ringBell(getBellCount('bell-end'));
+
   if(curPhase < PHASES.length - 1){
     curPhase++;
-    if(PHASES[curPhase].id === 'move'){
-      if(curRot < totalRotations){
-        setTimeout(() => {
-          curRot++; curPhase = 0; remainSecs = phaseSecs(0);
-          renderPhaseTrack(); renderRotPips(); updateDisplay();
-          ringBell(1);
-        }, 2000);
-        remainSecs = 0; updateDisplay();
-      } else {
-        clearInterval(iv); running = false;
-        document.getElementById('btn-start').textContent = 'Start';
-        document.getElementById('phase-banner').textContent = 'Exam complete';
-        document.getElementById('next-label').textContent = 'All rotations finished';
-        renderRotPips();
-      }
+    remainSecs = phaseSecs(curPhase);
+    renderPhaseTrack();
+    updateDisplay();
+  } else {
+    if(curRot < totalRotations){
+      curRot++;
+      curPhase = 0;
+      remainSecs = phaseSecs(0);
+      renderPhaseTrack();
+      renderRotPips();
+      setTimeout(()=>ringBell(getBellCount('bell-start')), 800);
+      updateDisplay();
     } else {
-      remainSecs = phaseSecs(curPhase);
-      renderPhaseTrack(); updateDisplay();
+      clearInterval(iv); running = false;
+      document.getElementById('btn-start').textContent = 'Start';
+      document.getElementById('phase-banner').textContent = 'Exam complete';
+      document.getElementById('next-label').textContent = 'All rotations finished';
+      renderRotPips();
     }
   }
 }
@@ -314,14 +353,14 @@ function ringBell(count){
     const freqBase = type === 'high' ? 1040 : type === 'low' ? 360 : 740;
 
     const partials = [
-      { freq: freqBase * 0.5,  gain: 1.8,  decay: 9.0 },
-      { freq: freqBase,        gain: 3.2,  decay: 7.0 },
-      { freq: freqBase * 1.26, gain: 1.6,  decay: 5.5 },
-      { freq: freqBase * 1.5,  gain: 1.4,  decay: 4.5 },
-      { freq: freqBase * 2.0,  gain: 1.0,  decay: 3.5 },
-      { freq: freqBase * 2.67, gain: 0.7,  decay: 2.5 },
-      { freq: freqBase * 3.0,  gain: 0.5,  decay: 2.0 },
-      { freq: freqBase * 4.0,  gain: 0.3,  decay: 1.4 },
+      { freq:freqBase*0.5,  gain:1.8,  decay:3.0 },
+      { freq:freqBase,      gain:3.2,  decay:2.5 },
+      { freq:freqBase*1.26, gain:1.6,  decay:2.0 },
+      { freq:freqBase*1.5,  gain:1.4,  decay:1.8 },
+      { freq:freqBase*2.0,  gain:1.0,  decay:1.4 },
+      { freq:freqBase*2.67, gain:0.7,  decay:1.0 },
+      { freq:freqBase*3.0,  gain:0.5,  decay:0.8 },
+      { freq:freqBase*4.0,  gain:0.3,  decay:0.6 },
     ];
 
     partials.forEach(p => {
@@ -362,7 +401,8 @@ function ringBell(count){
     sub.start(startTime); sub.stop(startTime + 0.3);
   }
 
-  for(let i=0; i<count; i++) strike(ctx.currentTime + i * 1.5);
+  const bellGap = parseFloat(document.getElementById("bell-gap")?.value||1.5);
+  for(let i=0; i<count; i++) strike(ctx.currentTime + i * bellGap);
 }
 
 renderPhaseSettings();
