@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITCA 2026 – Exam Timer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#0f0f0f;color:#f0f0f0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:2rem 1rem;}
+
+.header{text-align:center;margin-bottom:2rem;}
+.header h1{font-size:1rem;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;color:#888;margin-bottom:4px;}
+.header p{font-size:0.75rem;color:#555;letter-spacing:0.08em;text-transform:uppercase;}
+
+.timer-wrap{width:100%;max-width:560px;}
+
+.phase-banner{text-align:center;font-size:0.75rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#888;margin-bottom:0.75rem;min-height:18px;transition:color 0.3s;}
+.phase-banner.active{color:#aaa;}
+
+.big-time{font-size:clamp(80px,20vw,130px);font-weight:300;line-height:1;text-align:center;color:#f0f0f0;letter-spacing:-4px;font-variant-numeric:tabular-nums;padding:0.25rem 0 0.5rem;transition:color 0.4s;}
+.big-time.warn{color:#e8a020;}
+.big-time.danger{color:#e05050;}
+
+.next-label{text-align:center;font-size:0.8rem;color:#555;margin-bottom:1.25rem;min-height:18px;}
+
+.progress-track{height:3px;background:#222;border-radius:2px;margin-bottom:1.25rem;overflow:hidden;}
+.progress-fill{height:100%;border-radius:2px;background:#f0f0f0;transition:width 0.5s linear,background 0.4s;}
+.progress-fill.warn{background:#e8a020;}
+.progress-fill.danger{background:#e05050;}
+
+.phase-track{display:flex;gap:4px;margin-bottom:1rem;}
+.phase-seg{flex:1;display:flex;flex-direction:column;gap:3px;}
+.phase-seg-bar{height:3px;border-radius:2px;background:#222;transition:background 0.3s;}
+.phase-seg-bar.done{background:#555;}
+.phase-seg-bar.current{background:#f0f0f0;}
+.phase-seg-lbl{font-size:10px;color:#444;text-align:center;letter-spacing:0.04em;}
+.phase-seg-bar.current + .phase-seg-lbl{color:#888;}
+.phase-seg-bar.done + .phase-seg-lbl{color:#555;}
+
+.rot-row{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.rot-pip{width:8px;height:8px;border-radius:50%;border:1px solid #333;transition:all 0.3s;}
+.rot-pip.done{background:#555;border-color:#555;}
+.rot-pip.current{background:#f0f0f0;border-color:#f0f0f0;}
+
+.btn-row{display:flex;gap:10px;justify-content:center;margin-bottom:2rem;}
+.btn{padding:12px 32px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border:1px solid #333;background:transparent;color:#f0f0f0;letter-spacing:0.04em;transition:all 0.15s;}
+.btn:hover{border-color:#666;background:#1a1a1a;}
+.btn-main{background:#f0f0f0;color:#0f0f0f;border-color:#f0f0f0;font-size:16px;padding:14px 44px;}
+.btn-main:hover{background:#d0d0d0;border-color:#d0d0d0;}
+
+.divider{border:none;border-top:1px solid #1a1a1a;margin:1.5rem 0;}
+
+.settings-title{font-size:0.68rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#555;margin-bottom:12px;}
+
+.phase-settings{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;}
+.phase-row{display:flex;align-items:center;gap:12px;}
+.phase-row label{flex:1;font-size:13px;color:#aaa;}
+.phase-row input[type=number]{width:70px;font-size:13px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;padding:6px 8px;color:#f0f0f0;font-family:'DM Sans',sans-serif;outline:none;}
+.phase-row input:focus{border-color:#555;}
+.phase-row span{font-size:12px;color:#555;}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem;}
+.setting label{display:block;font-size:11px;color:#555;margin-bottom:6px;letter-spacing:0.06em;text-transform:uppercase;}
+.setting input[type=number]{width:100%;font-size:13px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;padding:6px 8px;color:#f0f0f0;font-family:'DM Sans',sans-serif;outline:none;}
+.setting input[type=number]:focus{border-color:#555;}
+.setting input[type=range]{width:100%;margin-top:6px;accent-color:#f0f0f0;}
+
+.bell-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.bell-row label{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.06em;}
+.bell-row select{font-size:13px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;padding:6px 10px;color:#f0f0f0;font-family:'DM Sans',sans-serif;outline:none;}
+.bell-row select:focus{border-color:#555;}
+.btn-sm{padding:6px 14px;border-radius:5px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid #2a2a2a;background:transparent;color:#aaa;transition:all 0.15s;}
+.btn-sm:hover{border-color:#555;color:#f0f0f0;}
+
+.complete-msg{text-align:center;font-size:1.2rem;color:#888;letter-spacing:0.08em;text-transform:uppercase;padding:1rem 0;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ITCA 2026</h1>
+  <p>Exam Timer</p>
+</div>
+
+<div class="timer-wrap">
+  <div class="phase-banner" id="phase-banner">Ready</div>
+  <div class="big-time" id="display">05:00</div>
+  <div class="next-label" id="next-label">&nbsp;</div>
+  <div class="progress-track"><div class="progress-fill" id="progress" style="width:100%"></div></div>
+  <div class="phase-track" id="phase-track"></div>
+  <div class="rot-row" id="rot-row"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-main" id="btn-start" onclick="startStop()">Start</button>
+    <button class="btn" onclick="resetAll()">Reset</button>
+    <button class="btn" onclick="skipPhase()">Skip</button>
+    <button class="btn" onclick="addTime(60)" title="Add 1 minute to current phase">+1 min</button>
+    <button class="btn" onclick="addTime(120)" title="Add 2 minutes to current phase">+2 min</button>
+  </div>
+
+  <div class="divider"></div>
+  <div class="settings-title">Phase timings</div>
+  <div class="phase-settings" id="phase-settings"></div>
+
+  <div class="divider"></div>
+  <div class="two-col">
+    <div class="setting">
+      <label>Rotations</label>
+      <input type="number" id="s-rotations" value="7" min="1" max="30" step="1" onchange="rebuild()">
+    </div>
+    <div class="setting">
+      <label>Bell volume</label>
+      <input type="range" id="s-vol" min="0" max="1" step="0.05" value="1">
+    </div>
+  </div>
+  <div class="bell-row">
+    <label>Bell:</label>
+    <select id="bell-type">
+      <option value="classic">Classic bell</option>
+      <option value="high">High bell</option>
+      <option value="low">Low bell</option>
+    </select>
+    <button class="btn-sm" onclick="ringBell(1)">Preview 1x</button>
+    <button class="btn-sm" onclick="ringBell(2)">Preview 2x</button>
+    <button class="btn-sm" onclick="ringBell(3)">Preview 3x</button>
+  </div>
+</div>
+
+<script>
+const PHASES = [
+  { id:'q1',   label:'Question 1', mins:5 },
+  { id:'q2',   label:'Question 2', mins:5 },
+  { id:'fb',   label:'Feedback',   mins:3 },
+  { id:'move', label:'Candidate moves', mins:2 },
+];
+
+let phaseMins = PHASES.map(p => p.mins);
+let totalRotations = 7;
+let curRot = 1;
+let curPhase = 0;
+let remainSecs = 0;
+let running = false;
+let iv = null;
+
+function phaseSecs(i){ return Math.round(phaseMins[i] * 60); }
+
+function rebuild(){
+  totalRotations = parseInt(document.getElementById('s-rotations').value) || 7;
+  PHASES.forEach((_,i) => {
+    const inp = document.getElementById('pi-'+i);
+    if(inp) phaseMins[i] = parseFloat(inp.value) || PHASES[i].mins;
+  });
+  if(!running){ curRot=1; curPhase=0; remainSecs=phaseSecs(0); }
+  renderPhaseTrack();
+  renderRotPips();
+  updateDisplay();
+}
+
+function renderPhaseSettings(){
+  const el = document.getElementById('phase-settings');
+  el.innerHTML = '';
+  PHASES.forEach((p,i) => {
+
+    el.innerHTML += `<div class="phase-row">
+      <label>${p.label}</label>
+      <input type="number" id="pi-${i}" value="${p.mins}" min="0.5" max="60" step="0.5" onchange="rebuild()">
+      <span>min</span>
+    </div>`;
+  });
+}
+
+function renderPhaseTrack(){
+  const el = document.getElementById('phase-track');
+  el.innerHTML = '';
+  PHASES.filter(p => p.id !== 'move').forEach((_,i) => {
+    const seg = document.createElement('div');
+    seg.className = 'phase-seg';
+    const bar = document.createElement('div');
+    bar.className = 'phase-seg-bar' + (i < curPhase ? ' done' : i === curPhase ? ' current' : '');
+    const lbl = document.createElement('div');
+    lbl.className = 'phase-seg-lbl';
+    lbl.textContent = PHASES[i].label;
+    seg.appendChild(bar); seg.appendChild(lbl);
+    el.appendChild(seg);
+  });
+}
+
+function renderRotPips(){
+  const el = document.getElementById('rot-row');
+  el.innerHTML = '';
+  for(let i=1; i<=totalRotations; i++){
+    const d = document.createElement('div');
+    d.className = 'rot-pip' + (i < curRot ? ' done' : i === curRot ? ' current' : '');
+    el.appendChild(d);
+  }
+}
+
+function fmt(s){
+  const m = Math.floor(Math.abs(s)/60), sec = Math.abs(s)%60;
+  return (s<0?'-':'') + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
+
+function updateDisplay(){
+  const disp = document.getElementById('display');
+  const prog = document.getElementById('progress');
+  const banner = document.getElementById('phase-banner');
+  const next = document.getElementById('next-label');
+
+  disp.textContent = fmt(remainSecs);
+  const total = phaseSecs(curPhase);
+  const pct = total > 0 ? Math.max(0, remainSecs/total*100) : 0;
+  prog.style.width = pct + '%';
+
+  const phaseLabel = curPhase < PHASES.length ? PHASES[curPhase].label : '';
+  banner.textContent = `Rotation ${curRot} of ${totalRotations}  —  ${phaseLabel}`;
+  banner.className = 'phase-banner' + (running ? ' active' : '');
+
+  const nextLabel = curPhase < PHASES.length-2
+    ? `Next: ${PHASES[curPhase+1].label}`
+    : curPhase === PHASES.length-2
+    ? 'Next: Candidate moves'
+    : curRot < totalRotations ? 'Next: Rotation ' + (curRot+1) : 'Final rotation';
+  next.textContent = nextLabel;
+
+  disp.className = 'big-time';
+  prog.className = 'progress-fill';
+  if(remainSecs <= 30 && remainSecs > 0 && running){
+    disp.classList.add('warn');
+    prog.classList.add('warn');
+  } else if(remainSecs <= 0){
+    disp.classList.add('danger');
+    prog.classList.add('danger');
+  }
+}
+
+function startStop(){
+  if(running){
+    clearInterval(iv); running = false;
+    document.getElementById('btn-start').textContent = 'Resume';
+  } else {
+    running = true;
+    document.getElementById('btn-start').textContent = 'Pause';
+    if(remainSecs === phaseSecs(0) && curPhase === 0 && curRot === 1) ringBell(1);
+    iv = setInterval(tick, 1000);
+  }
+}
+
+function tick(){
+  remainSecs--;
+  updateDisplay();
+  if(remainSecs <= 0) advancePhase();
+}
+
+function advancePhase(){
+  ringBell(1);
+  if(curPhase < PHASES.length - 1){
+    curPhase++;
+    if(PHASES[curPhase].id === 'move'){
+      if(curRot < totalRotations){
+        setTimeout(() => {
+          curRot++; curPhase = 0; remainSecs = phaseSecs(0);
+          renderPhaseTrack(); renderRotPips(); updateDisplay();
+          ringBell(1);
+        }, 2000);
+        remainSecs = 0; updateDisplay();
+      } else {
+        clearInterval(iv); running = false;
+        document.getElementById('btn-start').textContent = 'Start';
+        document.getElementById('phase-banner').textContent = 'Exam complete';
+        document.getElementById('next-label').textContent = 'All rotations finished';
+        renderRotPips();
+      }
+    } else {
+      remainSecs = phaseSecs(curPhase);
+      renderPhaseTrack(); updateDisplay();
+    }
+  }
+}
+
+function skipPhase(){ advancePhase(); }
+
+function resetAll(){
+  clearInterval(iv); running = false;
+  curRot = 1; curPhase = 0;
+  remainSecs = phaseSecs(0);
+  document.getElementById('btn-start').textContent = 'Start';
+  renderPhaseTrack(); renderRotPips(); updateDisplay();
+}
+
+function addTime(secs){
+  remainSecs += secs;
+  updateDisplay();
+}
+
+function ringBell(count){
+  const vol = parseFloat(document.getElementById('s-vol').value);
+  const type = document.getElementById('bell-type').value;
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+  function strike(startTime){
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -4;
+    comp.knee.value = 2;
+    comp.ratio.value = 10;
+    comp.attack.value = 0.001;
+    comp.release.value = 0.1;
+    comp.connect(ctx.destination);
+
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(vol * 3.5, startTime);
+    master.connect(comp);
+
+    const freqBase = type === 'high' ? 1040 : type === 'low' ? 360 : 740;
+
+    const partials = [
+      { freq: freqBase * 0.5,  gain: 1.8,  decay: 9.0 },
+      { freq: freqBase,        gain: 3.2,  decay: 7.0 },
+      { freq: freqBase * 1.26, gain: 1.6,  decay: 5.5 },
+      { freq: freqBase * 1.5,  gain: 1.4,  decay: 4.5 },
+      { freq: freqBase * 2.0,  gain: 1.0,  decay: 3.5 },
+      { freq: freqBase * 2.67, gain: 0.7,  decay: 2.5 },
+      { freq: freqBase * 3.0,  gain: 0.5,  decay: 2.0 },
+      { freq: freqBase * 4.0,  gain: 0.3,  decay: 1.4 },
+    ];
+
+    partials.forEach(p => {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.connect(g); g.connect(master);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(p.freq, startTime);
+      g.gain.setValueAtTime(0, startTime);
+      g.gain.linearRampToValueAtTime(p.gain, startTime + 0.002);
+      g.gain.exponentialRampToValueAtTime(0.0001, startTime + p.decay);
+      osc.start(startTime);
+      osc.stop(startTime + p.decay + 0.1);
+    });
+
+    // Clapper strike noise
+    const bufLen = Math.floor(ctx.sampleRate * 0.1);
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i=0; i<bufLen; i++) data[i] = (Math.random()*2-1) * Math.pow(1-i/bufLen, 1.5);
+    const noise = ctx.createBufferSource();
+    noise.buffer = buf;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(vol * 5, startTime);
+    ng.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.1);
+    noise.connect(ng); ng.connect(comp);
+    noise.start(startTime); noise.stop(startTime + 0.12);
+
+    // Sub boom
+    const sub = ctx.createOscillator();
+    const sg = ctx.createGain();
+    sub.connect(sg); sg.connect(comp);
+    sub.type = 'sine';
+    sub.frequency.setValueAtTime(90, startTime);
+    sub.frequency.exponentialRampToValueAtTime(35, startTime + 0.2);
+    sg.gain.setValueAtTime(vol * 2.5, startTime);
+    sg.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.25);
+    sub.start(startTime); sub.stop(startTime + 0.3);
+  }
+
+  for(let i=0; i<count; i++) strike(ctx.currentTime + i * 1.5);
+}
+
+renderPhaseSettings();
+rebuild();
+</script>
+</body>
+</html>
