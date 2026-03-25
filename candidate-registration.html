@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITCA 2027 — Candidate Registration</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf9f7;--white:#fff;--ink:#1a1a1a;--muted:#6b7280;
+  --border:#e5e4e0;--accent:#1a1a1a;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+
+.header{background:var(--ink);color:white;padding:2.5rem 2rem 2rem;text-align:center;}
+.header h1{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:300;letter-spacing:-0.02em;margin-bottom:0.4rem;}
+.header p{font-size:0.82rem;opacity:0.6;letter-spacing:0.06em;text-transform:uppercase;}
+
+.form-wrap{max-width:520px;margin:2rem auto;padding:0 1.5rem 4rem;}
+
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.75rem;margin-bottom:1.25rem;}
+.card h2{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:400;margin-bottom:1.25rem;}
+
+.field{margin-bottom:1rem;}
+.field label{display:block;font-size:0.75rem;color:var(--muted);margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;}
+.field input,.field select{width:100%;border:1px solid var(--border);border-radius:7px;padding:0.65rem 0.85rem;font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--ink);background:white;outline:none;transition:border-color 0.15s;}
+.field input:focus,.field select:focus{border-color:var(--ink);}
+
+/* Type selector */
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;}
+.type-opt{position:relative;}
+.type-opt input{position:absolute;opacity:0;width:0;height:0;}
+.type-opt label{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0.75rem 0.5rem;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;text-align:center;transition:all 0.15s;background:white;}
+.type-opt label .type-emoji{font-size:1.4rem;}
+.type-opt label .type-name{font-size:0.78rem;font-weight:600;color:var(--ink);}
+.type-opt label .type-sub{font-size:0.65rem;color:var(--muted);line-height:1.3;}
+.type-opt input:checked + label{border-color:var(--ink);background:#f8f7f5;}
+
+.submit-btn{width:100%;padding:1rem;background:var(--ink);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;cursor:pointer;transition:opacity 0.15s;}
+.submit-btn:hover{opacity:0.85;}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.status{text-align:center;font-size:0.82rem;color:var(--muted);margin-top:0.75rem;min-height:20px;}
+.status.success{color:#059669;}
+.status.error{color:#dc2626;}
+
+.success-screen{display:none;text-align:center;padding:3rem 1.5rem;}
+.success-screen .tick{font-size:3rem;margin-bottom:1rem;}
+.success-screen h2{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:300;margin-bottom:0.5rem;}
+.success-screen p{font-size:0.85rem;color:var(--muted);line-height:1.6;}
+.success-screen button{margin-top:1.5rem;padding:0.6rem 1.5rem;background:var(--ink);color:white;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:0.9rem;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ITCA 2027</h1>
+  <p>Candidate Registration</p>
+</div>
+
+<div class="form-wrap">
+
+  <div id="form-body">
+    <div class="card">
+      <h2>Your details</h2>
+      <div class="field">
+        <label>Full name</label>
+        <input type="text" id="f-name" placeholder="Dr. Jane Smith" autocomplete="name">
+      </div>
+      <div class="field">
+        <label>Training level</label>
+        <select id="f-level">
+          <option value="">Select your level…</option>
+          <option>ST3</option>
+          <option>ST4</option>
+          <option>ST5</option>
+          <option>ST6</option>
+          <option>ST7</option>
+          <option>Fellow</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Email (optional — for results)</label>
+        <input type="email" id="f-email" placeholder="jane.smith@nhs.net" autocomplete="email">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Exam status</h2>
+      <div class="type-grid">
+        <div class="type-opt">
+          <input type="radio" name="f-type" id="t-pre" value="Pre" checked>
+          <label for="t-pre">
+            <span class="type-emoji">📘</span>
+            <span class="type-name">Pre</span>
+            <span class="type-sub">Pre Part A</span>
+          </label>
+        </div>
+        <div class="type-opt">
+          <input type="radio" name="f-type" id="t-peri" value="Peri">
+          <label for="t-peri">
+            <span class="type-emoji">📗</span>
+            <span class="type-name">Peri</span>
+            <span class="type-sub">Peri Part A</span>
+          </label>
+        </div>
+        <div class="type-opt">
+          <input type="radio" name="f-type" id="t-post" value="Post">
+          <label for="t-post">
+            <span class="type-emoji">📙</span>
+            <span class="type-name">Post</span>
+            <span class="type-sub">Post Part A</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Anything else?</h2>
+      <div class="field">
+        <label>Notes (optional)</label>
+        <input type="text" id="f-notes" placeholder="e.g. accessibility requirements">
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitForm()">Register for ITCA 2027</button>
+    <div class="status" id="status-msg"></div>
+  </div>
+
+  <div class="success-screen" id="success-screen">
+    <div class="tick">✓</div>
+    <h2>You're registered</h2>
+    <p>Thank you — your details have been received.<br>You'll receive joining instructions closer to the date.</p>
+    <button onclick="registerAnother()">Register another candidate</button>
+  </div>
+
+</div>
+
+<script>
+
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0ThcLVLVke7WxW2YdZALvmbU1o6GzCxAJqDi0NWNKuwnUCm-uKgNUAJSpfYhERld4bA/exec';
+
+async function submitForm(){
+  const name  = document.getElementById('f-name').value.trim();
+  const level = document.getElementById('f-level').value;
+  const email = document.getElementById('f-email').value.trim();
+  const type  = document.querySelector('input[name="f-type"]:checked')?.value || 'Pre';
+  const notes = document.getElementById('f-notes').value.trim();
+
+  const btn    = document.getElementById('submit-btn');
+  const status = document.getElementById('status-msg');
+
+  if(!name){ status.textContent='Please enter your name.'; status.className='status error'; return; }
+  if(!level){ status.textContent='Please select your training level.'; status.className='status error'; return; }
+
+  btn.disabled = true;
+  status.textContent = 'Registering…';
+  status.className = 'status';
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action:'register', name, level, type, email, notes }),
+    });
+    document.getElementById('form-body').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'block';
+  } catch(err) {
+    status.textContent = 'Could not submit. Please check your connection and try again.';
+    status.className = 'status error';
+    btn.disabled = false;
+  }
+}
+
+function registerAnother(){
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-level').value = '';
+  document.getElementById('f-email').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('t-pre').checked = true;
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('status-msg').textContent = '';
+  document.getElementById('form-body').style.display = 'block';
+  document.getElementById('success-screen').style.display = 'none';
+}
+</script>
+</body>
+</html>
